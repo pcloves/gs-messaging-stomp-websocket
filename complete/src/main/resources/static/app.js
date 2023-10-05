@@ -1,12 +1,14 @@
+let userId = Math.random().toString(36).substring(2, 7)
+
 const stompClient = new StompJs.Client({
-    brokerURL: 'ws://localhost:8080/gs-guide-websocket'
+    brokerURL: 'ws://localhost:8080/gs-guide-websocket?playerId=' + userId
 });
 
 stompClient.onConnect = (frame) => {
     setConnected(true);
     console.log('Connected: ' + frame);
-    stompClient.subscribe('/topic/greetings', (greeting) => {
-        showGreeting(JSON.parse(greeting.body).content);
+    stompClient.subscribe('/user/topic/privateChat', (message) => {
+        showPrivateChat(JSON.parse(message.body));
     });
 };
 
@@ -24,8 +26,7 @@ function setConnected(connected) {
     $("#disconnect").prop("disabled", !connected);
     if (connected) {
         $("#conversation").show();
-    }
-    else {
+    } else {
         $("#conversation").hide();
     }
     $("#greetings").html("");
@@ -41,21 +42,24 @@ function disconnect() {
     console.log("Disconnected");
 }
 
-function sendName() {
+function privateChat() {
     stompClient.publish({
-        destination: "/app/hello",
-        body: JSON.stringify({'name': $("#name").val()})
+        destination: "/app/privateChat",
+        body: JSON.stringify({
+            'toUser': $("#toUser").val(),
+            'message': $("#message").val()
+        })
     });
 }
 
-function showGreeting(message) {
-    $("#greetings").append("<tr><td>" + message + "</td></tr>");
+function showPrivateChat(message) {
+    $("#greetings").append("<tr><td>" + message.fromUser + ' > ' + message.toUser + ":" + message.message + "</td></tr>");
 }
 
 $(function () {
     $("form").on('submit', (e) => e.preventDefault());
-    $( "#connect" ).click(() => connect());
-    $( "#disconnect" ).click(() => disconnect());
-    $( "#send" ).click(() => sendName());
+    $("#connect").click(() => connect());
+    $("#disconnect").click(() => disconnect());
+    $("#send").click(() => privateChat());
 });
 

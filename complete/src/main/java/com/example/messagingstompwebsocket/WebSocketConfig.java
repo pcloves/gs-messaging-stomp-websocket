@@ -10,15 +10,25 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-	@Override
-	public void configureMessageBroker(MessageBrokerRegistry config) {
-		config.enableSimpleBroker("/topic");
-		config.setApplicationDestinationPrefixes("/app");
-	}
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        config.enableStompBrokerRelay("/topic")
+                .setRelayHost("192.168.50.104")
+                .setVirtualHost("zhengtongshan")
+                .setSystemLogin("user")
+                .setSystemPasscode("xcyg580Wgr@rabbitmq")
+                .setClientLogin("user")
+                .setClientPasscode("xcyg580Wgr@rabbitmq")
+                .setAutoStartup(true);
+//        config.enableSimpleBroker("/topic");
 
-	@Override
-	public void registerStompEndpoints(StompEndpointRegistry registry) {
-		registry.addEndpoint("/gs-guide-websocket");
-	}
+        config.setApplicationDestinationPrefixes("/app");
+    }
+
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/gs-guide-websocket")
+				.setHandshakeHandler(new CustomHandshakeHandler());
+    }
 
 }
